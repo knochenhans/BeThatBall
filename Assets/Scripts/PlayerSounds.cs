@@ -4,50 +4,84 @@ using UnityEngine;
 
 public class PlayerSounds : MonoBehaviour
 {
-    public AudioClip ground;
+    public AudioClip groundHit;
+    public AudioClip rolling;
 
-    AudioSource audioSourceGround;
+    AudioSource audioSourceGroundHit;
+    AudioSource audioSourceRolling;
 
     void Start()
     {
-        audioSourceGround = gameObject.AddComponent<AudioSource>();
+        audioSourceGroundHit = gameObject.AddComponent<AudioSource>();
+        audioSourceGroundHit.playOnAwake = false;
+        audioSourceGroundHit.volume = 0.0f;
+
+        audioSourceRolling = gameObject.AddComponent<AudioSource>();
+        audioSourceRolling.loop = true;
+        audioSourceRolling.playOnAwake = false;
+        audioSourceRolling.volume = 0.0f;
     }
 
     void OnCollisionEnter(Collision collision)
     {
-        foreach (ContactPoint contact in collision.contacts)
+        if (collision.gameObject.tag != "Ground")
         {
-            // Ground
-            if (contact.normal.y == 1.0)
-            {
-                if (collision.relativeVelocity.magnitude > 4)
-                    PlayCollisionMap(collision, -1.0f);
-            }
+            if (collision.relativeVelocity.magnitude > 4.0f)
+                PlayHit(collision, -1.0f);
+        }
+    }
+
+    void OnCollisionExit(Collision collision)
+    {
+        if (collision.gameObject.tag == "Ground")
+        {
+            if (audioSourceRolling.isPlaying)
+                audioSourceRolling.Pause();
         }
     }
 
     void OnCollisionStay(Collision collision)
     {
-        if (collision.contactCount > 1)
+        if (collision.gameObject.tag == "Ground")
         {
-            //if (collision.relativeVelocity.magnitude > 2)
-            PlayCollisionMap(collision);
+            float magnitude = GetComponent<Rigidbody>().velocity.magnitude;
 
-            foreach (ContactPoint contact in collision.contacts)
+            if (magnitude > 0.5f)
             {
+                if (audioSourceRolling.isPlaying)
+                {
+                    if (magnitude > 4.0f)
+                    {
+                        audioSourceRolling.pitch = 1.0f;
+                        audioSourceRolling.volume = 1.0f;
+                    }
+                    else
+                    {
+                        audioSourceRolling.pitch = 1.0f / 4.0f * magnitude + 0.5f;
+                        audioSourceRolling.volume = 1.0f / 4.0f * magnitude;
+                    }
 
+
+                }
+                else
+                    audioSourceRolling.PlayOneShot(rolling);
+            }
+            else
+            {
+                if (audioSourceRolling.isPlaying)
+                    audioSourceRolling.Pause();
             }
         }
     }
 
-    void PlayCollisionMap(Collision collision, float volumeMod)
+    void PlayHit(Collision collision, float volumeMod)
     {
-        audioSourceGround.pitch = Random.Range(0.200f, 0.204f);
-        audioSourceGround.PlayOneShot(ground, 1.0f / 4.0f * collision.relativeVelocity.magnitude + Random.Range(-0.1f, 0.1f) + volumeMod - 0.5f);
+        audioSourceGroundHit.pitch = Random.Range(0.200f, 0.204f);
+        audioSourceGroundHit.PlayOneShot(groundHit, collision.relativeVelocity.magnitude / 4.0f + volumeMod);
     }
 
     void PlayCollisionMap(Collision collision)
     {
-        PlayCollisionMap(collision, 0.0f);
+        PlayHit(collision, 0.0f);
     }
 }

@@ -584,6 +584,6 @@
 "Assets/Scripts/PlayerCollision.cs"
 "Assets/Scripts/PlayerFollow.cs"
 "Assets/Scripts/PlayerInput.cs"
-"Assets/Scripts/PlayerSound.cs"
+"Assets/Scripts/PlayerSounds.cs"
 "Assets/Scripts/Randomizer.cs"
 "Assets/Scripts/UIFollow.cs"
